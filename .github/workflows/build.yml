@@ -1,0 +1,29 @@
+name: Gerar PKG do PS3
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar arquivos
+        run: |
+          for z in cuphd-ps3*.zip; do [ -f "$z" ] && unzip -o -q "$z"; done
+          if [ -d cuphd ]; then echo "DIR=cuphd" >> $GITHUB_ENV; else echo "DIR=." >> $GITHUB_ENV; fi
+      - name: Compilar com ps3dev
+        run: |
+          docker run --rm -v "$PWD/$DIR":/src -w /src ps3dev/ps3dev sh -c '
+            S=$(find / -name sfo.xml 2>/dev/null | head -1)
+            if [ -z "$S" ]; then
+              git clone --depth 1 https://github.com/ps3dev/PSL1GHT /tmp/psl1ght
+              S=$(find /tmp/psl1ght -name sfo.xml | head -1)
+            fi
+            echo "sfo.xml: $S"
+            cp "$S" sfo.xml
+            make
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cuphd-pkg
+          path: ${{ env.DIR }}/cuphd.pkg
