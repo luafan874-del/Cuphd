@@ -13,7 +13,7 @@ jobs:
           if [ -d cuphd ]; then echo "DIR=cuphd" >> $GITHUB_ENV; else echo "DIR=." >> $GITHUB_ENV; fi
       - name: Compilar com ps3dev
         run: |
-          docker run --rm -v "$PWD/$DIR":/src -w /src ps3dev/ps3dev sh -c '
+          flipacholas/ps3devextra:latest
             S=$(find / -name sfo.xml 2>/dev/null | head -1)
             if [ -z "$S" ]; then
               git clone --depth 1 https://github.com/ps3dev/PSL1GHT /tmp/psl1ght
